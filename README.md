@@ -126,9 +126,9 @@
 
 ## Установка и настройка Nginx на сервере
 
-Создаем файл конфигурации. Вместо "domain_name" пишем название своего сайта.
+Создаем файл конфигурации для сайта. 
 
-```nano /etc/nginx/sites-available/domain_name```
+```nano /etc/nginx/sites-available/meltan.ru```
 
 Вставляем следующий код. В строке proxy_pass http://10.8.0.3:80 нужно будет сменить адрес на реальный адрес клиента, который мы получим позднее.
 
@@ -148,6 +148,28 @@
         }
 }
 ```
+Создаем симлинк в директорию запускаемых хостов
+
+```ln -s /etc/nginx/sites-available/meltan.ru /etc/nginx/sites-enabled/meltan.ru```
+
+Удаляем ссылку дефолтной конфигурации серевера
+
+```sudo rm /etc/nginx/sites-enabled/defauil```
+
+Проверяем конфигурацию сервера
+
+```sudo nginx -t```
+
+Должно быть
+
+```nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+```
+
+Перезагружаем конфигурацию Nginx
+
+```sudo nginx -s reload```
+
 
 # Настройка Synology
 
