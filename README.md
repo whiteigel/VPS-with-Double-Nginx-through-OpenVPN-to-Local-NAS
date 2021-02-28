@@ -1,10 +1,10 @@
 # VPS-Nginx-OpenVN-to-NAS
 
-Цель проекта: доступ к сетевому хранилищу Synology по собственному доменному имени. Хранилище не имеет доступ наружу, на роутере закртыт порты, ip раздается провайдером динамически, статический ip невозможен. На хрунилище запущено несколько сервисов, к каждому из них обеспечивается свой доступ по именни поддомена.
+Цель проекта: доступ к сетевому хранилищу Synology по собственному доменному имени. К хранилищу нет доступа извне, на роутере закртыт порты, ip раздается провайдером динамически, статический ip невозможен. На хранилище запущено несколько сервисов, к каждому из них должен обеспечивается доступ по собственному именни поддомена. В качестве примера будет использоваться домен meltan.ru. На момент написания статьи (28.02.2021) домен был свободен.
 
 # Настройка VPS сервера
 
-Создаем VPS на площадке провайдера. Привызяваем доменное имя, создаем нужные поддомены. Получаем доступ по SSH.
+Создаем VPS на площадке провайдера. Привязываем доменное имя, создаем нужные поддомены. Получаем доступ по SSH.
 
 Подключемся по SSH
 
@@ -24,11 +24,11 @@
 
 Добавляем пакеты на сервер
 
-apt install vim net-tools tree ncdu bash-completion curl dnsutils htop iftop pwgen screen sudo wget
+```apt install vim net-tools tree ncdu bash-completion curl dnsutils htop iftop pwgen screen sudo wget```
 
 Добавляем Fail2ban
 
-apt install fail2ban
+```apt install fail2ban```
 
 Добавляем нового пользователя 
 
@@ -114,9 +114,40 @@ apt install fail2ban
 
 ```wget https://git.io/vpn -O openvpn-install.sh && bash openvpn-install.sh```
 
-После запуска скрипта отвечаем на вопросы и получаем файл сертификата. Он бдует лежать в домашней директории root /root. 
+После запуска скрипта отвечаем на вопросы и получаем файл сертификата. Он бдует лежать в домашней директории root /root.
+
+Проверяем наличие vpn-тунеля.
+
+```ip a```
+
+В выводе ищем интефейс tun0:. В его параметрах нужен адрес сервера в нашей виртуальной сети (10.8.0.1)
+
+```inet 10.8.0.1/24 brd 10.8.0.255 scope global tun0```
 
 ## Установка и настройка Nginx на сервере
+
+Создаем файл конфигурации. Вместо "domain_name" пишем название своего сайта.
+
+```nano /etc/nginx/sites-available/domain_name```
+
+Вставляем следующий код. В строке proxy_pass http://10.8.0.3:80 нужно будет сменить адрес на реальный адрес клиента, который мы получим позднее.
+
+```server {
+        server_name meltan.ru;
+        listen 80;
+        location /{
+                proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+
+                        client_max_body_size 0;
+                        add_header Strict-Transport-Security "max-age=31536000; inclideSubDomains: preload";
+                        add_header Referrer-Policy "same-origin";
+                        proxy_pass http://10.8.0.3:80;
+        }
+}
+```
 
 # Настройка Synology
 
