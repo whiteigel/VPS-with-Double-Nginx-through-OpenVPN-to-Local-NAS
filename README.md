@@ -18,9 +18,17 @@
 
 ```apt-get upgrade```
 
+Добавляем пакеты на сервер
+
+apt install vim net-tools tree ncdu bash-completion curl dnsutils htop iftop pwgen screen sudo wget
+
+Добавляем Fail2ban
+
+apt install fail2ban
+
 Добавляем нового пользователя 
 
-```adduser USER```
+```useradd -m -s /bin/bash USERNAME```
 
 Добавляем пользователя в sudo
 
@@ -56,27 +64,27 @@
 
 ## Настраиваем пользователя
 
-Подключаемся
+Подключаемся:
 
 ```ssh USER@IP```
 
-Делаем папку .ssh для ключа
+Делаем папку .ssh для ключа:
 
 ```mkdir -p ~/.ssh```
 
-На сервере создаем файл для ключа
+На сервере создаем файл для ключа:
 
 ```nano ~/.ssh/authorized_keys```
 
-На рабочей машине в терминале
+На рабочей машине в терминале:
 
 ```cat ~/.ssh/id_rsa.pub | pbcopy```
 
-Выставляем права
+Выставляем права:
 
 ```sudo chmod -R 700 ~/.ssh/```
 
-Открываем настройку ssh
+Открываем настройку ssh:
 
 ```sudo nano /etc/ssh/sshd_config```
 
@@ -84,17 +92,25 @@
 
 ```PasswordAuthentication no```
 
-Рестартуем ssh
+Рестартуем ssh:
 
 ```sudo systemctl restart sshd```
 
-Открываем настройку sudo
+Открываем настройку sudo:
 
 ```sudo visudo```
 
-Настраиваем sudo без пароля. 
+Настраиваем sudo без пароля. Находим в конфигурации нужную строку и изменяем ее на нижеследующую:
 
 ```%sudo   ALL=(ALL:ALL) NOPASSWD:ALL```
+
+##Поднимаем OpenVPN
+
+Скрипт берем здесь https://github.com/Nyr/openvpn-install. Спасибо ребятам!
+
+```wget https://git.io/vpn -O openvpn-install.sh && bash openvpn-install.sh```
+
+Настройка Nginx
 
 
 
