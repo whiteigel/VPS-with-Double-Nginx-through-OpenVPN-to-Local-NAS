@@ -104,13 +104,26 @@ apt install fail2ban
 
 ```%sudo   ALL=(ALL:ALL) NOPASSWD:ALL```
 
-##Поднимаем OpenVPN
+## Поднимаем OpenVPN на сервере
 
 Скрипт берем здесь https://github.com/Nyr/openvpn-install. Спасибо ребятам!
 
 ```wget https://git.io/vpn -O openvpn-install.sh && bash openvpn-install.sh```
 
-Настройка Nginx
+После запуска скрипта отвечаем на вопросы и получаем файл сертификата. Он бдует лежать в домашней директории root /root. 
+
+## Установка и настройка Nginx на сервере
+
+# Настройка Synology
+
+## Установка и настройка клиента OpenVPN
+
+Если получится поднять клиент на Synology - отлично! Значит сертификаты начали импортироваться. Если нет - ставим виртуалку Ubuntu на NAS. На ней поднимаем клиент OpenVPN.
+
+## Установка и настройка Nginx на клиенте
+
+После установки OpenVPN клиента ставим Nginx и настраиваем его как reverse proxy на локальный адрес NAS
+
 
 
 
