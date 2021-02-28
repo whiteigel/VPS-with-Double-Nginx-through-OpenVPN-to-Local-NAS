@@ -18,13 +18,10 @@ sh root@server_ip
 passwd root
 ```
 
-Проверяем обновления
-
-```apt-get update```
-
-И обновляем систему
+Обновляем систему
 
 ```
+apt-get update
 apt-get upgrade
 ```
 
@@ -126,7 +123,7 @@ cat ~/.ssh/id_rsa.pub | pbcopy
 sudo chmod -R 700 ~/.ssh/
 ```
 
-Открываем настройку ssh:
+Открываем настройки ssh:
 
 ```
 sudo nano /etc/ssh/sshd_config
