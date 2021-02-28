@@ -55,40 +55,40 @@
 
 Подключаемся
 
-ssh USER@IP
+```ssh USER@IP```
 
 Делаем папку .ssh для ключа
 
-mkdir -p ~/.ssh
+```mkdir -p ~/.ssh```
 
 Вводим ключ
 
-nano ~/.ssh/authorized_keys
-cat ~/.ssh/id_rsa.pub | pbcopy
+```nano ~/.ssh/authorized_keys```
+```cat ~/.ssh/id_rsa.pub | pbcopy```
 
 Выставляем права
 
-sudo chmod -R 700 ~/.ssh/
+```sudo chmod -R 700 ~/.ssh/```
 
 Открываем настройку ssh
 
-sudo nano /etc/ssh/sshd_config
+```sudo nano /etc/ssh/sshd_config```
 
 Отключаем вход по паролю
 
-PasswordAuthentication no
+```PasswordAuthentication no```
 
 Рестартуем ssh
 
-sudo systemctl restart sshd
+```sudo systemctl restart sshd```
 
 Открываем настройку sudo
 
-sudo visudo
+```sudo visudo```
 
 Настраиваем sudo без пароля. 
 
-%sudo   ALL=(ALL:ALL) NOPASSWD:ALL
+```%sudo   ALL=(ALL:ALL) NOPASSWD:ALL```
 
 
 
