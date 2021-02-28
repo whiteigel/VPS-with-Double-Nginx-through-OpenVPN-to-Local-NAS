@@ -15,6 +15,34 @@ passwd root
 apt-get update
 apt-get upgrade
 
-Добаляем нового пользователя 
+Добавляем нового пользователя 
 
-adduser -
+adduser USER
+
+Добавляем пользователя в sudo
+
+adduser USER sudo
+
+Задаем пароль для пользователя
+
+passwd USER
+
+Правим конфиг SSH
+
+nano /etc/ssh/sshd_config
+
+Закрываем логин root
+
+PermitRootLogin no
+
+Рестартуем SSH
+
+systemctl restart sshd
+
+Открываем новую сессию и проверяем можем ли войти под новым пользователем
+
+ssh root@server_ip
+
+Если все ок, выходим из сессии root. Все под root больше не войдем!
+
+exit
