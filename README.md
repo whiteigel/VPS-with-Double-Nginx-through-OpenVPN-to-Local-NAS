@@ -4,54 +4,54 @@
 
 Подключемся по SSH
 
-``` ssh root@server_ip ```
+```ssh root@server_ip```
 
 Меняем пароль root
 
-passwd root
+```passwd root```
 
 Обновляем систему
 
-apt-get update
-apt-get upgrade
+```apt-get update```
+```apt-get upgrade```
 
 Добавляем нового пользователя 
 
-adduser USER
+```adduser USER```
 
 Добавляем пользователя в sudo
 
-adduser USER sudo
+```adduser USER sudo```
 
 Задаем пароль для пользователя
 
-passwd USER
+```passwd USER```
 
 Правим конфиг SSH
 
-nano /etc/ssh/sshd_config
+```nano /etc/ssh/sshd_config```
 
 Закрываем логин root
 
-PermitRootLogin no
+```PermitRootLogin no```
 
 Рестартуем SSH
 
-systemctl restart sshd
+```systemctl restart sshd```
 
 Открываем новую сессию и проверяем можем ли войти под новым пользователем
 
-ssh USER@server_ip
+```ssh USER@server_ip```
 
 Если все ок, выходим из сессии root. Все, под root больше не войдем!
 
-exit
+```exit```
 
 Выходим из сессии пользователя
 
-' exit '
+```exit```
 
-# Настраиваем пользователя
+## Настраиваем пользователя
 
 Подключаемся
 
