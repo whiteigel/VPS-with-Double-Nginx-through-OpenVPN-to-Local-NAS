@@ -8,11 +8,15 @@
 
 Подключемся по SSH
 
-```ssh root@server_ip```
+```s
+sh root@server_ip
+```
 
 Меняем пароль root
 
-```passwd root```
+```
+passwd root
+```
 
 Проверяем обновления
 
@@ -20,119 +24,172 @@
 
 И обновляем систему
 
-```apt-get upgrade```
+```
+apt-get upgrade
+```
 
 Добавляем пакеты на сервер
 
-```apt install vim net-tools tree ncdu bash-completion curl dnsutils htop iftop pwgen screen sudo wget```
+```
+apt install vim net-tools tree ncdu bash-completion curl dnsutils htop iftop pwgen screen sudo wget
+```
 
 Добавляем Fail2ban
 
-```apt install fail2ban```
+```
+apt install fail2ban
+```
 
 Добавляем нового пользователя 
 
-```useradd -m -s /bin/bash USERNAME```
+```
+useradd -m -s /bin/bash USERNAME
+```
 
 Добавляем пользователя в sudo
 
-```adduser USER sudo```
+```
+adduser USER sudo
+```
 
 Задаем пароль для пользователя
 
-```passwd USER```
+```
+passwd USER
+```
 
 Правим конфиг SSH
 
-```nano /etc/ssh/sshd_config```
+```
+nano /etc/ssh/sshd_config
+```
 
 Закрываем логин root
 
-```PermitRootLogin no```
+```
+PermitRootLogin no
+```
 
 Рестартуем SSH
 
-```systemctl restart sshd```
+```
+systemctl restart sshd
+```
 
 ***Открываем новую сессию и проверяем можем ли войти под новым пользователем***
 
-```ssh USER@server_ip```
+```
+ssh USER@server_ip
+```
 
 ***Если все ок, выходим из сессии root. Все, под root больше не войдем!***
 
-```exit```
+```
+exit
+```
 
 Выходим из сессии пользователя
 
-```exit```
+```
+exit
+```
 
 ## Настраиваем пользователя
 
 Подключаемся:
 
-```ssh USER@IP```
+```
+ssh USER@IP
+```
 
 Делаем папку .ssh для ключа:
 
-```mkdir -p ~/.ssh```
+```
+mkdir -p ~/.ssh
+```
 
 На сервере создаем файл для ключа:
 
-```nano ~/.ssh/authorized_keys```
+```
+nano ~/.ssh/authorized_keys
+```
 
 На рабочей машине в терминале:
 
-```cat ~/.ssh/id_rsa.pub | pbcopy```
+```
+cat ~/.ssh/id_rsa.pub | pbcopy
+```
 
 Выставляем права:
 
-```sudo chmod -R 700 ~/.ssh/```
+```
+sudo chmod -R 700 ~/.ssh/
+```
 
 Открываем настройку ssh:
 
-```sudo nano /etc/ssh/sshd_config```
+```
+sudo nano /etc/ssh/sshd_config
+```
 
 Отключаем вход по паролю
 
-```PasswordAuthentication no```
+```
+PasswordAuthentication no
+```
 
 Рестартуем ssh:
 
-```sudo systemctl restart sshd```
+```
+sudo systemctl restart sshd
+```
 
 Открываем настройку sudo:
 
-```sudo visudo```
+```
+sudo visudo
+```
 
 Настраиваем sudo без пароля. Находим в конфигурации нужную строку и изменяем ее на нижеследующую:
 
-```%sudo   ALL=(ALL:ALL) NOPASSWD:ALL```
+```
+%sudo   ALL=(ALL:ALL) NOPASSWD:ALL
+```
 
 ## Поднимаем OpenVPN на сервере
 
 Скрипт берем здесь https://github.com/Nyr/openvpn-install. Спасибо ребятам!
 
-```wget https://git.io/vpn -O openvpn-install.sh && bash openvpn-install.sh```
+```
+wget https://git.io/vpn -O openvpn-install.sh && bash openvpn-install.sh
+```
 
 После запуска скрипта отвечаем на вопросы и получаем файл сертификата. Он бдует лежать в домашней директории root /root.
 
 Проверяем наличие vpn-тунеля.
 
-```ip a```
+```
+ip a
+```
 
 В выводе ищем интефейс tun0:. В его параметрах нужен адрес сервера в нашей виртуальной сети (10.8.0.1)
 
-```inet 10.8.0.1/24 brd 10.8.0.255 scope global tun0```
+```
+inet 10.8.0.1/24 brd 10.8.0.255 scope global tun0
+```
 
 ## Установка и настройка Nginx на сервере
 
 Создаем файл конфигурации для сайта. 
 
-```nano /etc/nginx/sites-available/meltan.ru```
+```
+sudo nano /etc/nginx/sites-available/meltan.ru
+```
 
 Вставляем следующий код. В строке proxy_pass http://10.8.0.3:80 нужно будет сменить адрес на реальный адрес клиента, который мы получим позднее.
 
-```server {
+```
+server {
         server_name meltan.ru;
         listen 80;
         location /{
@@ -150,25 +207,35 @@
 ```
 Создаем симлинк в директорию запускаемых хостов
 
-```ln -s /etc/nginx/sites-available/meltan.ru /etc/nginx/sites-enabled/meltan.ru```
+```
+sudo ln -s /etc/nginx/sites-available/meltan.ru /etc/nginx/sites-enabled/meltan.ru
+```
 
 Удаляем ссылку дефолтной конфигурации серевера
 
-```sudo rm /etc/nginx/sites-enabled/defauil```
+```
+sudo rm /etc/nginx/sites-enabled/defauil
+```
 
 Проверяем конфигурацию сервера
 
-```sudo nginx -t```
+```
+sudo nginx -t
+```
 
 Должно быть
 
-```nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+```
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
 nginx: configuration file /etc/nginx/nginx.conf test is successful
+
 ```
 
 Перезагружаем конфигурацию Nginx
 
-```sudo nginx -s reload```
+```
+sudo nginx -s reload
+```
 
 
 # Настройка Synology
