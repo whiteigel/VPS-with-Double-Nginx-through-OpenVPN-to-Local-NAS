@@ -8,8 +8,8 @@
 
 Подключемся по SSH
 
-```s
-sh root@server_ip
+```
+ssh root@server_ip
 ```
 
 Меняем пароль root
