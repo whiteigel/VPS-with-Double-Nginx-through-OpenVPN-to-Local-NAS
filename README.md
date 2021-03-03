@@ -233,7 +233,10 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 ```
 sudo nginx -s reload
 ```
-# Настройка OpenVPN клиента
+
+## Установка и настройка клиента OpenVPN
+
+Если получится поднять клиент на Synology - отлично! Значит сертификаты начали импортироваться. Если нет - ставим виртуалку Ubuntu на NAS. На ней поднимаем клиент OpenVPN.
 
 Устанавливаем OpenVPN
 
@@ -268,13 +271,53 @@ tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP>
 ```
 Запоминаем адрес 10.8.0.4 (у вас будет свой адрес). Этот адрес нужно вставить в конфигурационный файл nginx на вашем сервере.
 
+## Продолжение настройки Nginx на VPS
 
+Открываем конфигурацинный файл нашего хоста
 
-# Настройка Synology
+```
+sudo nano /etc/nginx/sites-available/meltan.ru
+```
 
-## Установка и настройка клиента OpenVPN
+Добавляем адрес нашего клиента в конфигурацию
 
-Если получится поднять клиент на Synology - отлично! Значит сертификаты начали импортироваться. Если нет - ставим виртуалку Ubuntu на NAS. На ней поднимаем клиент OpenVPN.
+```
+server {
+        server_name meltan.ru;
+        listen 80;
+        location /{
+                proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+
+                        client_max_body_size 0;
+                        add_header Strict-Transport-Security "max-age=31536000; inclideSubDomains: preload";
+                        add_header Referrer-Policy "same-origin";
+                        proxy_pass http://10.8.0.4:80;
+        }
+}
+```
+Проверяем конфигурацию сервера
+
+```
+sudo nginx -t
+```
+
+Должно быть
+
+```
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+```
+
+Перезагружаем конфигурацию Nginx
+
+```
+sudo nginx -s reload
+```
+
 
 ## Установка и настройка Nginx на клиенте
 
