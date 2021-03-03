@@ -1,7 +1,7 @@
 # VPS with Double Nginx through OpenVPN to Local NAS
 
 
-Цель проекта: доступ к сетевому хранилищу Synology по собственному доменному имени. К хранилищу нет доступа извне, на роутере закрыты порты, ip раздается провайдером динамически, статический ip невозможен. На хранилище запущено несколько сервисов, к каждому из них должен обеспечивается доступ по собственному имени поддомена. В качестве примера будет использоваться домен meltan.ru. На момент написания статьи (28.02.2021) домен был свободен.
+Цель проекта: доступ к сетевому хранилищу Synology по собственному доменному имени. К хранилищу нет доступа извне, на роутере закрыты порты, ip раздается провайдером динамически, статический ip невозможен. На хранилище запущено несколько сервисов, к каждому из них должен обеспечивается доступ по собственному имени поддомена. 
 
 # Настройка VPS сервера
 
@@ -26,18 +26,6 @@ passwd root
 ```
 apt-get update
 apt-get upgrade
-```
-
-Добавляем пакеты на сервер:
-
-```
-apt install vim net-tools tree ncdu bash-completion curl dnsutils htop iftop pwgen screen sudo wget
-```
-
-Добавляем Fail2ban:
-
-```
-apt install fail2ban
 ```
 
 Добавляем нового пользователя:
@@ -114,7 +102,7 @@ mkdir -p ~/.ssh
 nano ~/.ssh/authorized_keys
 ```
 
-На рабочей машине в терминале:
+На рабочей машине в терминале вводим (для MacOS):
 
 ```
 cat ~/.ssh/id_rsa.pub | pbcopy
@@ -153,7 +141,7 @@ sudo systemctl restart sshd
 wget https://git.io/vpn -O openvpn-install.sh && bash openvpn-install.sh
 ```
 
-После запуска скрипта отвечаем на вопросы и получаем файл сертификата. Он будет лежать в домашней директории root /root.
+После запуска скрипта отвечаем на вопросы (в основном, все по умолчанию) и получаем файл сертификата. Он будет лежать в домашней директории root /root.
 
 Проверяем наличие vpn-тунеля:
 
@@ -223,11 +211,11 @@ Nginx Full (v6)            ALLOW       Anywhere (v6)
 sudo nano /etc/nginx/sites-available/meltan.ru
 ```
 
-Вставляем следующий код. В строке proxy_pass http://10.8.0.3:80 нужно будет сменить адрес на реальный адрес клиента, который мы получим позднее.
+Вставляем следующий код. Директиву **server_name domain.ru** меняем на имя своего домена. В строке **proxy_pass http://10.8.0.3:80** нужно будет сменить адрес на реальный адрес клиента, который мы получим позднее.
 
 ```
 server {
-        server_name meltan.ru;
+        server_name domain.ru;
         listen 80;
         location /{
                 proxy_set_header Host $host;
@@ -245,7 +233,7 @@ server {
 Создаем симлинк в директорию запускаемых хостов:
 
 ```
-sudo ln -s /etc/nginx/sites-available/meltan.ru /etc/nginx/sites-enabled/meltan.ru
+sudo ln -s /etc/nginx/sites-available/domain.ru /etc/nginx/sites-enabled/domain.ru
 ```
 
 Удаляем ссылку дефолтной конфигурации сервера:
@@ -284,7 +272,7 @@ sudo nginx -s reload
 sudo apt install openvpn
 ```
 
-Копируем полученный сертификат file.ovpn в домашнюю директорию любым способом, sftp например.
+Копируем полученный сертификат file.ovpn, который вы создали на сервере, в домашнюю директорию любым способом, sftp например.
 
 Переходим в папку с сертификатом, копируем его в папку openvpn и назначаем его конфигурацией:
 
@@ -296,6 +284,8 @@ sudo cp file.ovpn /etc/openvpn/client.conf
 ```
 openvpn --client --config /etc/openvpn/client.conf &
 ```
+
+Нажимаем еще раз enter.
 
 Проверяем адрес клиента в тунеле:
 
@@ -316,14 +306,14 @@ tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP>
 Открываем конфигурационный файл нашего хоста:
 
 ```
-sudo nano /etc/nginx/sites-available/meltan.ru
+sudo nano /etc/nginx/sites-available/domain.ru
 ```
 
 Меняем адрес нашего клиента в конфигурации на полученный (**10.8.0.4**, у вас свой адрес, помните?):
 
 ```
 server {
-        server_name meltan.ru;
+        server_name domain.ru;
         listen 80;
         location /{
                 proxy_set_header Host $host;
@@ -367,7 +357,7 @@ sudo nginx -s reload
 
 ```
 server {
-        server_name meltan.ru;
+        server_name domain.ru;
         location /{
                 proxy_set_header Host $host;
                         proxy_set_header X-Real-IP $remote_addr;
@@ -381,19 +371,19 @@ server {
         }
 
     listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/meltan.ru/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/meltan.ru/privkey.pem; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/domain.ru/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/domain.ru/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 
 }
 server {
-    if ($host = meltan.ru) {
+    if ($host = domain.ru) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
 
-        server_name meltan.ru;
+        server_name domain.ru;
         listen 80;
     return 404; # managed by Certbot
 }
@@ -428,13 +418,13 @@ server {
 sudo nano /etc/nginx/sites-available/nas
 ```
 
-Вставляем код. Вместо домена meltan.ru вставляете свой домен. В строке proxy_pass http://your_nas_ip; указываете внутренний ip вашей машины (192.168.x.x). В моем примере ссылка ведет на папку /nextcloud. Используя http://your_nas_ip:port можно попасть в любой сервис на вашем NAS, доступный по этому порту.  В одном файле можно собрать все домены и поддомены, относящиеся к данному серверу. 
+Вставляем код. Вместо домена domain.ru вставляете имя своего домена. В строке proxy_pass http://your_nas_ip; указываете внутренний ip вашей машины (192.168.x.x). В моем примере ссылка ведет на папку /nextcloud. Директива сервера ds.domain.ru ведет на страницу управления NAS. Используя http://your_nas_ip:port, можно попасть на любой сервис на вашем NAS, доступный по этому порту.  В одном файле можно собрать все домены и поддомены, относящиеся к данному серверу. 
 
 В качестве дополнительного образования не помешает посмотреть курс по настройке Nginx или почитать документацию на странице продукта (она на русском!)
 
 ```
 server {
-        server_name meltan.ru;
+        server_name domain.ru;
         listen 80;
         location /{
                 proxy_set_header Host $host;
@@ -450,7 +440,7 @@ server {
         }
 }
 server {
-        server_name ds.meltan.ru;
+        server_name ds.domain.ru;
         listen 80;
         location /{
                 proxy_set_header Host $host;
@@ -498,7 +488,7 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 sudo nginx -s reload
 ```
 
-По идее, после всех этих действий у вас должны открываться окна тех сервисов, что вы назначили в конфигурационном файле на вашем прокси внутри сети. Если это не сработало, скорее всего, вы где-то допустили ошибку, и это нормально. Или я допустил ошибку (и это тоже нормально) и буду вам очень благодарен, если вы укажете на нее. И помните, работа с open source software это прежде всего хорошее владение командами --help, man и поиском в google. Have fun!
+По идее, после всех этих действий у вас должны открываться окна тех сервисов, что вы назначили в конфигурационном файле на вашем прокси внутри сети. Помните, один домен (поддомен) - один сервис. Нельзя набрать в строке https://domain.ru:8080 и попасть на порт 8080 локального NAS (азбука, но лучше лишний раз сказать). Если это не сработало, скорее всего, вы где-то допустили ошибку, и это нормально. Или я допустил ошибку (и это тоже нормально) и буду вам очень благодарен, если вы укажете на нее. И помните, работа с open source software это прежде всего хорошее владение командами --help, man и поиском в google. Have fun!
 
 
 
