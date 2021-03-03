@@ -187,13 +187,45 @@ inet 10.8.0.1/24 brd 10.8.0.255 scope global tun0
 ```
 sudo nginx -s reload
 ```
-Если вылетает 403 ошибка - у вас, скорее всего закрыт 80 порт на фарволле. Откройте его и заодно 443 для https.
+Если вылетает 403 ошибка - у вас, скорее всего закрыт 80 порт на фарволле. 
+
+Проверьте статус файрволла
+
+```
+sudo ufw status
+```
+
+Если в выводе нет Nginx, как здесь, его нужно добавить
+
+```
+Status: active
+
+To                         Action      From
+--                         ------      ----
+OpenSSH                    ALLOW       Anywhere                  
+OpenSSH (v6)               ALLOW       Anywhere (v6)  
+```
+
+Доавьте Nginx. Это откроет 80 (http) и 443 (https) порты.
 
 ```
 sudo ufw allow 'Nginx Full'
 ```
+Проверьте статус, вывод должен быть таким
 
-Создаем файл конфигурации для сайта. 
+```
+Status: active
+
+To                         Action      From
+--                         ------      ----
+OpenSSH                    ALLOW       Anywhere                  
+Nginx Full                 ALLOW       Anywhere                  
+OpenSSH (v6)               ALLOW       Anywhere (v6)             
+Nginx Full (v6)            ALLOW       Anywhere (v6)
+```
+Если у вас нет файрволла, установите его и проделайте предыдущий шаг по работе с ним. Это точно будет не лишним.
+
+Продолжаем настраивать виртуальный хост. Создаем файл конфигурации для сайта. 
 
 ```
 sudo nano /etc/nginx/sites-available/meltan.ru
