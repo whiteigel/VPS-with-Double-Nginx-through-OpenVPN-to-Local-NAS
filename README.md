@@ -294,7 +294,7 @@ server {
                         client_max_body_size 0;
                         add_header Strict-Transport-Security "max-age=31536000; inclideSubDomains: preload";
                         add_header Referrer-Policy "same-origin";
-                        proxy_pass **http://10.8.0.4:80**;
+                        proxy_pass http://10.8.0.4:80;
         }
 }
 ```
