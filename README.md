@@ -369,19 +369,142 @@ sudo nginx -s reload
 
 ## Установка SSL-сертификата на VPS
 
-Для установки SSL-сертификата воспользуемся https://certbot.eff.org/. В сторке **My HTTP website is running** выбираем приложение (Nginx) и операционную систему вашего VPS (у меня Ubuntu 20.04). Робот настроится на ваши данные и выдаст все шаги и команды, которые нужно выполнить. В результате ваш сайт будет защищен SSL-сертификатом. 
+Для установки SSL-сертификата воспользуемся https://certbot.eff.org/. В строке **My HTTP website is running** выбираем приложение (Nginx) и операционную систему вашего VPS (у меня Ubuntu 20.04). Робот настроится на ваши данные и выдаст все шаги и команды, которые нужно выполнить. В результате ваш сайт будет защищен SSL-сертификатом. 
+
+Бот добавит сертификаты и изменит конфигурационный файл вашего виртуального хоста, который мы создали и правили ранее.
+
+```
+server {
+        server_name meltan.ru;
+        location /{
+                proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+
+                        client_max_body_size 0;
+                        add_header Strict-Transport-Security "max-age=31536000; inclideSubDom>
+                        add_header Referrer-Policy "same-origin";
+                        proxy_pass http://10.8.0.4:80;
+        }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/meltan.ru/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/meltan.ru/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = meltan.ru) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+        server_name meltan.ru;
+        listen 80;
+    return 404; # managed by Certbot
+}
+```
 
 Чтобы сертификат обновлялся автоматически через 90 дней добавьте в cron (```crontab -e```) строчку:
 
 ```
 0 5 */90 * * certbot renew
 ```
+Для каждого дополнительного поддомена вам нужно сделать те же действия, что и для основного:
+1. Создать конфиг в папке sites-available
+2. Созадть линк в папку sites-enabled
+3. Проверить конфиг nginx
+4. Перезагрузить nginx
+5. Добавить SSL-сертификат для поддомена (certbot)
 
 ## Установка и настройка Nginx на клиенте
 
-После установки OpenVPN клиента ставим Nginx и настраиваем его как reverse proxy на локальный адрес NAS
+После установки OpenVPN клиента ставим Nginx и настраиваем его как reverse proxy на локальный адрес NAS. Клиент - это ваша виртуальная машина и другое устройство, работающее как прокси-сервер.
 
+Устанавливаем nginx
 
+```
+ sudo apt install nginx
+```
+После этого можно заходить по имени вашего домена и видеть уже дефолтную страницу Nginx на вашем внутреннем прокси. Чтобы понять это, измените индексную страницу Nginx на клиенте. Путь к ней /var/www/html/index.nginx-debian.html 
+
+Теперь создадим конфигурационный файл для форварда трафика на наш NAS
+
+```
+sudo nano /etc/nginx/sites-available/nas
+```
+
+Вставляем код. Вместо домена meltan.ru вставляете свой домен. В строке proxy_pass http://your_nas_ip; указываете внутренний ip вашей машины (192.168.x.x). В моем примере ссылка ведет на папку /nextcloud. Используя http://your_nas_ip:port можно попасть в любой сервис на вашем NAS, доступный по этому порту.  В одном файле можно собрать все домены и поддомены, относящиеся к данному серверу. В качестве дополнительного образования не помешает посмотреть курс по настройке nginx или почитать документацию на странице продукта (она на русском!)
+
+```
+server {
+        server_name meltan.ru;
+        listen 80;
+        location /{
+                proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+
+                        client_max_body_size 0;
+                        add_header Strict-Transport-Security "max-age=31536000; inclideSubDomains: preload";
+                        add_header Referrer-Policy "same-origin";
+                        proxy_pass http://your_nas_ip;
+                        root /nextcloud;
+        }
+}
+server {
+        server_name ds.meltan.ru;
+        listen 80;
+        location /{
+                proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+
+                        client_max_body_size 0;
+                        add_header Strict-Transport-Security "max-age=31536000; inclideSubDomains: preload";
+                        add_header Referrer-Policy "same-origin";
+                        proxy_pass http://your_nas_ip:5000;
+        }
+}
+```
+
+Создаем симлинк в директорию запускаемых хостов
+
+```
+sudo ln -s /etc/nginx/sites-available/nas /etc/nginx/sites-enabled/nas
+```
+
+Удаляем ссылку дефолтной конфигурации серевера
+
+```
+sudo rm /etc/nginx/sites-enabled/defauil
+```
+
+Проверяем конфигурацию сервера
+
+```
+sudo nginx -t
+```
+
+Должно быть
+
+```
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+```
+
+Перезагружаем конфигурацию Nginx
+
+```
+sudo nginx -s reload
+```
+
+По идее, после всех этих действий у вас должны открываться окна тех сервисов, что вы назначили в конфигурационном файле на вашем прокси внутри сети. Если это не сработало, скорее всего, вы допустили где-то ошибку. Или я допустил ошибку и буду вам очень благодарен, если вы укажете на нее. И помните, работа с open source software это прежде всего хорошее владение командами --help, man и поиском в google. Have fun!
 
 
 
