@@ -208,7 +208,7 @@ Nginx Full (v6)            ALLOW       Anywhere (v6)
 Продолжаем настраивать виртуальный хост. Создаем файл конфигурации для сайта: 
 
 ```
-sudo nano /etc/nginx/sites-available/meltan.ru
+sudo nano /etc/nginx/sites-available/domain.ru
 ```
 
 Вставляем следующий код. Директиву **server_name domain.ru** меняем на имя своего домена. В строке **proxy_pass http://10.8.0.3:80** нужно будет сменить адрес на реальный адрес клиента, который мы получим позднее.
