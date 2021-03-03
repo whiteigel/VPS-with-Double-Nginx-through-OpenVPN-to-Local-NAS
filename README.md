@@ -374,7 +374,7 @@ sudo nginx -s reload
 Чтобы сертификат обновлялся автоматически через 90 дней добавьте в cron (```crontab -e```) строчку:
 
 ```
-0 5 */90 * * root sudo certbot renew
+0 5 */90 * * certbot renew
 ```
 
 ## Установка и настройка Nginx на клиенте
