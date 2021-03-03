@@ -233,6 +233,41 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 ```
 sudo nginx -s reload
 ```
+# Настройка OpenVPN клиента
+
+Устанавливаем OpenVPN
+
+```
+sudo apt install openvpn
+```
+
+Копируем полученный сертификат file.ovpn в домашнюю директорию любым способом
+
+Копируем сертификат в папку openvpn и назначаем его конфигурацией
+
+```
+sudo cp file.ovpn /etc/openvpn/client.conf
+```
+Запускаем OpenVPN
+
+```
+openvpn --client --config /etc/openvpn/client.conf &
+```
+
+Проверяем адрес клиента в тунеле
+
+```
+ip a 
+```
+Находим строку с примерно таким содержанием
+
+```
+tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> 
+    link/none 
+    inet 10.8.0.4/24 brd 10.8.0.255 
+```
+Запоминаем адрес 10.8.0.4 (у вас будет свой адрес). Этот адрес нужно вставить в конфигурационный файл nginx на вашем сервере.
+
 
 
 # Настройка Synology
